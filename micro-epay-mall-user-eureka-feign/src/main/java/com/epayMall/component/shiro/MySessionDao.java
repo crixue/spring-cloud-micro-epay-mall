@@ -64,6 +64,9 @@ public class MySessionDao extends AbstractSessionDAO {
 
 	@Override
 	protected Session doReadSession(Serializable sessionId) {
+		if(sessionId == null){
+			return null;
+		}
 		String sessionIdStr = sessionId.toString();
 		logger.debug("do read one session:{}", sessionIdStr);
 		

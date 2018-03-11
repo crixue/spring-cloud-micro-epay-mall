@@ -1,15 +1,93 @@
+logging:
+  level:
+    root: info
+
 spring:
   application:
     name: micro-epay-mall-client-zuul
+  #该参数用来开启重试机制  
+  cloud:
+    loadbalancer:
+      retry:
+        enabled: true
+        
+    #redis  
+  redis:
+    #host: 192.168.36.110
+    #port: 6379
+    pool:
+      max-active: 16
+      max-wait: -1
+      max-idle: 16
+      max-wait-millis: 10000
+    timeout: 2000 
+    cluster:
+      max-redirects: 3
+      nodes: 192.168.36.110:7000,192.168.36.110:7001,192.168.36.110:7002,192.168.36.110:7003,192.168.36.110:7004,192.168.36.110:7005
   
+    #spring session
+  session:
+    store-type: redis      
+
 eureka:
   client:
     service-url:
       defaultZone : http://localhost:8761/eureka/
 
-#这里的配置表示，访问/city/** 直接重定向到service-id为micro-various-api-data-weather-city-eureka-feign的微服务下        
+ribbon:  
+  #请求处理的超时时间
+  ReadTimeout: 60000 
+  #ribbon请求连接的超时时间 
+  ConnectTimeout: 60000
+  MaxAutoRetries: 1
+
+
 zuul:
+  sensitive-headers:
+
+  #处理server端错误的拦截器
+  SendErrorFilter:
+    post: 
+      disable: false
+
+  host:  
+    socket-timeout-millis: 30000  
+    connect-timeout-millis: 60000
+    
+  #这里的配置表示，访问/user/** 直接重定向到service-id为micro-epay-mall-user-eureka-feign的微服务下      
   routes:
     user:
-      path: /epay-mall/user/**
+      sensitive-headers: 
+      path: /user/**
       service-id: micro-epay-mall-user-eureka-feign
+      
+    category:
+      sensitive-headers: 
+      path: /category/**
+      service-id: micro-epay-mall-category-eureka-feign
+      
+    product:
+      sensitive-headers:
+      path: /product/**
+      service-id: micro-epay-mall-product-eureka-feign
+   
+   
+   
+#custom
+password: 
+  salt: geelysdafaqj23ou89ZXcj@#$@#$#@KJdjklj;D../dSF.,
+  
+#shiro filter url
+shiroFilter: 
+  prop:
+    loginUrl: /login   
+    successUrl: /index
+    unauthorizedUrl: /403
+  filterChainDefinitionMap:
+    /**/manage/**: 1 
+   
+intercept:
+  URL:
+    admin:
+      /**/manage/**   
+      

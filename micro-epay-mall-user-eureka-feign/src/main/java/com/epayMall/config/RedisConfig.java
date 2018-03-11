@@ -13,7 +13,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import redis.clients.jedis.JedisPoolConfig;
 
-@Configuration
+//@Configuration
 public class RedisConfig {
 	
 	private static final Logger logger = LoggerFactory.getLogger(RedisConfig.class);
@@ -54,7 +54,7 @@ public class RedisConfig {
 	 * 序列化方式 建议key/hashKey采用StringRedisSerializer
 	 * @return
 	 */
-	@Bean
+	@Bean(name="redisTemplateTemplate")
 	public RedisTemplate<?, ?> redisTemplate() {
 		RedisTemplate<?, ?> redisTemplate = new RedisTemplate<>();
 		redisTemplate.setConnectionFactory(jedisConnectionFactory());

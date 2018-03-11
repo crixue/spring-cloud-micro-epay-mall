@@ -23,6 +23,9 @@ public class Const {
     public static final String FAIL = "fail";
     public static final String UNKNOWN = "unknown";
     
+    public static final int COOKIE_EXPIRE_TIME = 60 * 60 * 24 * 365;
+    public static final Long REDIS_SESSION_EXPIRE_TIME = 60 * 30L;
+    
     public interface ProductListOrderBy{
         Set<String> PRICE_ASC_DESC = Sets.newHashSet("price_desc","price_asc");
     }

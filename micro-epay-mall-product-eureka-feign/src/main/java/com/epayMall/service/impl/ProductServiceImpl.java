@@ -32,7 +32,7 @@ public class ProductServiceImpl implements IProductSercive {
     @Autowired
     private ProductMapper productMapper;
     @Autowired
-    private IDataClientZuulForCategory dataClientZuulForCategory;
+    private IDataClientZuulForCategory iDataClientZuulForCategory;
     
     @Override
     public ServerResponse saveOrUpdateProduct(Product product){
@@ -98,12 +98,12 @@ public class ProductServiceImpl implements IProductSercive {
 		BeanUtils.copyProperties(product, productDetailVo);
 		
 		String imageHost = Constants.getProperty("ftp.server.http.prefix", "http://img.xuerongjing.com/");
-		ServerResponse<Category> response = dataClientZuulForCategory.getCategoryByCategoryId(product.getCategoryId());
+		ServerResponse<Category> response = iDataClientZuulForCategory.getCategoryByCategoryId(product.getCategoryId());
 		if(!response.isSuccess()) {
 			logger.info("[assembleProductDetailVo]-dataClientZuulForCategory-getCategoryByCategoryId 调用异常");
 		}
 		Category category = response.getData();
-		Integer parentCategoryId = category.getParentId() == null? 0 : category.getParentId();
+		Integer parentCategoryId = category == null? 0 : category.getParentId();
 		String createTime = DateTimeUtil.dateToStr(product.getCreateTime());
 		String updateTime = DateTimeUtil.dateToStr(product.getUpdateTime());
 		
@@ -209,7 +209,7 @@ public class ProductServiceImpl implements IProductSercive {
 		}
 		
 		//product不为空，则获取包括其子类目的所有类目
-		ServerResponse<List<Integer>> categoryIdsRes = dataClientZuulForCategory.getRecursionCategoryId(categoryId);
+		ServerResponse<List<Integer>> categoryIdsRes = iDataClientZuulForCategory.getRecursionCategoryId(categoryId);
 		List<Integer> categoryIds = categoryIdsRes.getData();
 		
 		PageHelper.startPage(pageNum, pageSize);

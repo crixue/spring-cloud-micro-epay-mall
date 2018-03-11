@@ -166,6 +166,8 @@ public interface ICacheService {
     
     public void remove(String key, int count, Object obj);
     /*---------------common---------------*/
+    boolean expire(String key, long timeout, TimeUnit unit);
+    
     public boolean exists(String key);
     /**
      * 获取keys的值
@@ -199,7 +201,11 @@ public interface ICacheService {
     
     public void set(String key, long index, String value) ;
     
+    boolean setIfNotExists(String key, String value);
+    
     public <T> T getAndSet(String key, T obj);
+    
+    <T> T get(String key, Class<T> clazz);
     
     /**
      * 减少指定的整数
@@ -240,7 +246,6 @@ public interface ICacheService {
 
 	void hmadd(String key, Map<? extends Object, ? extends Object> map);
 
-	void hadd(String key, String field, Object value); 
-    
-    
+	void hadd(String key, String field, Object value);
+
 }

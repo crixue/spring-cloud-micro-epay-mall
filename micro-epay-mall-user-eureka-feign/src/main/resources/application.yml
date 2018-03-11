@@ -8,8 +8,8 @@ feign:
   client:
     config:
       feignName:
-        connectTimeout: 6000
-        readTimeout: 6000 
+        connectTimeout: 60000
+        readTimeout: 60000 
 
 logging:
   level:
@@ -20,20 +20,29 @@ logging:
 spring:
   application:
     name: micro-epay-mall-user-eureka-feign
-    
+  
+  #redis  
   redis:
-    host: 172.16.130.110
-    port: 6379
+    #host: 192.168.36.110
+    #port: 6379
     pool:
       max-active: 16
       max-wait: -1
       max-idle: 16
-    timeout: 0   
+      max-wait-millis: 10000
+    timeout: 2000 
+    cluster:
+      max-redirects: 3
+      nodes: 192.168.36.110:7000,192.168.36.110:7001,192.168.36.110:7002,192.168.36.110:7003,192.168.36.110:7004,192.168.36.110:7005
+      
+  #spring session
+  session:
+    store-type: redis
 
   #druid datasource
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://172.16.130.110:3306/mmall?characterEncoding=utf-8
+    url: jdbc:mysql://192.168.36.110:3306/mmall?characterEncoding=utf-8
     username: xrj
     password: xue13581321
     
@@ -70,7 +79,7 @@ shiroFilter:
     successUrl: /index
     unauthorizedUrl: /403
   filterChainDefinitionMap:
-    /epay-mall/user/**: anon
-    /epay-mall/user/remote/**:  roles[1]
+    /epay-mall/user/tt: anon
+    /epay-mall/user/remote/cc:  roles[1]
   
     

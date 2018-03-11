@@ -1,23 +1,22 @@
 package com.epayMall.controller.portal;
 
-import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationInfo;
-import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,10 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.epayMall.common.Const;
 import com.epayMall.common.ResponseCodeEnum;
 import com.epayMall.common.ServerResponse;
-import com.epayMall.component.shiro.MySessionDao;
-import com.epayMall.config.MyShiroRealm;
 import com.epayMall.dao.UserMapper;
 import com.epayMall.pojo.User;
+import com.epayMall.redis.ICacheService;
+import com.epayMall.util.CookieUtil;
 
 
 @RestController
@@ -42,11 +41,9 @@ public class ShiroUserController {
 	private static final String CONTROLLER = "ShiroUserController";
 	
 	@Autowired
-	private MyShiroRealm myShiroRealm;
-	@Autowired
-	private MySessionDao mySessionDao;
-	@Autowired
 	private UserMapper userMapper;
+	@Autowired
+	private ICacheService cacheService;
 	
 	@PostMapping("/remote/getUserByUsername")
 	public ServerResponse<User> getUserByUsername(String username) {
@@ -54,8 +51,8 @@ public class ShiroUserController {
 		return ServerResponse.createBySucessResReturnData(user);
 	}
 
-	@RequestMapping(value="/userLogin", method=RequestMethod.POST)
-	public ServerResponse<User> userLogin(String username, String password) {
+	@PostMapping(value="/userLogin")
+	public ServerResponse<User> userLogin(HttpServletResponse response, String username, String password) {
 		logger.info("[{}]-[userLogin method]-[接受客户端请求]", CONTROLLER);
 		
 		Subject currentUser = SecurityUtils.getSubject();
@@ -86,9 +83,11 @@ public class ShiroUserController {
 		
 		if(flag) {
 			User user = (User) currentUser.getPrincipal();
-			Session session = currentUser.getSession();
-			updateUserSession(session, user);
-			logger.info("{}用户成功登陆", user.getUsername());
+			
+			String customToken = CookieUtil.writeCustomCookie(response);
+			cacheService.set(customToken, user, Const.REDIS_SESSION_EXPIRE_TIME, TimeUnit.SECONDS);
+			
+			logger.info("{}用户成功登陆,且已经将用户信息保存至Redis中", user.getUsername());
 			return ServerResponse.createBySucessResReturnData(user);
 		} else {
 			logger.info("未能成功登陆");
@@ -96,68 +95,28 @@ public class ShiroUserController {
 		}
 	}
 	
-	@RequestMapping(value="/get/authenticationInfo", method=RequestMethod.POST)
-	public ServerResponse<AuthenticationInfo> getAuthenticationInfo(AuthenticationToken token) {
-		AuthenticationInfo authenticationInfo = myShiroRealm.doGetAuthenticationInfoService(token);
-		return ServerResponse.createBySucessResReturnData(authenticationInfo);
-	}
 	
-	@PostMapping("/get/userSession")
-	public ServerResponse<Session> getUserSession(Session session) {
-		logger.info("[{}]-[getUserSession method]-[接受客户端请求]", CONTROLLER);
-		if(session == null) {
-			return ServerResponse.createBySucessResReturnData(null);
-		}
- 		Serializable sessionId = session.getId();
-		
-		Session realSession = mySessionDao.readSession(sessionId);
-		return ServerResponse.createBySucessResReturnData(realSession);
-	}
-	
-	@PostMapping("/update/userSession")
-	public void updateUserSession(Session session, User user) {
-		logger.info("[{}]-[updateUserSession method]-[接受客户端请求]", CONTROLLER);
-		session.setAttribute(Const.CURRENT_USER, user);
-		mySessionDao.update(session);
-	}
-	
-	@DeleteMapping("/delete/userSession")
-	public void deleteUserSession(Session session) {
-		logger.info("[{}]-[deleteUserSession method]-[接受客户端请求]", CONTROLLER);
-		session.setAttribute(Const.CURRENT_USER, null);
-		mySessionDao.delete(session);
-	}
-	
-	@GetMapping("/remote/userLogout")
-	public ServerResponse<String> remoteUserLogout(Session session) {
+	@GetMapping("/userLogout")
+	public ServerResponse<String> remoteUserLogout(HttpServletRequest request, HttpServletResponse response) {
 		logger.info("[{}]-[remoteUserLogout method]-[接受客户端请求]", CONTROLLER);
-		deleteUserSession(session);
+		CookieUtil.deleteCustomCookie(request, response);
 		return ServerResponse.createBySucessResReturnMsg("用户成功退出登陆");
 	}
 	
-	@GetMapping("/userLogout")
-	public ServerResponse<String>UserLogout() {
-		logger.info("[{}]-[userLogout method]-[接受客户端请求]", CONTROLLER);
-		Subject currentUser = SecurityUtils.getSubject();
-		Session session = currentUser.getSession();
-		return remoteUserLogout(session);
-	}
 	
 	@GetMapping("/get/personalInformation")
-	public <T> ServerResponse<T> getPersonalInformation() {
-		logger.info("[{}]-[getPersonalInformation method]-[接受客户端请求]", CONTROLLER);
-		Subject currentSubject = SecurityUtils.getSubject();
-		Session session = currentSubject.getSession();
-		
-		return getRemotePersonalInformation(session);
-	}
-	
-	@GetMapping("/remote/get/personalInformation")
-	public <T> ServerResponse<T> getRemotePersonalInformation(Session session) {
+	public ServerResponse<User> getRemotePersonalInformation(HttpServletRequest request) {
 		logger.info("[{}]-[getRemotePersonalInformation method]-[接受客户端请求]", CONTROLLER);
-		ServerResponse response;
+		ServerResponse<User> response;
 		//先校验用户是否已经登陆
-		User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+		String customToken = CookieUtil.readCustomCookie(request);
+		ServerResponse<User> userRes = checkUserIfHasCustomSessionId(customToken);
+		if(!userRes.isSuccess()){
+			logger.warn("[checkUserIfHasCustomSessionId]-have something wrong:{}", userRes.getMsg());
+			return ServerResponse.createByErrorResReturnMsg(userRes.getMsg());
+		}
+		
+		User currentUser = userRes.getData();
 		if (currentUser == null) {
 			response = ServerResponse.createByOtherErrorResReturnMsg(ResponseCodeEnum.NEED_LOGIN.getStatus(),"未登录,需要强制登录status=10");
 			logger.info("[{}]-[getRemotePersonalInformation method]-[获取个人信息强制登陆失败,响应描述为：{}]", CONTROLLER, response.getMsg());
@@ -172,11 +131,18 @@ public class ShiroUserController {
 	}
 	
 	
-	@GetMapping("/remote/get/userInfo")
-	public ServerResponse<User> getRemoteUserInfo(Session session){
+	@GetMapping("/get/userInfo")
+	public ServerResponse<User> getRemoteUserInfo(HttpServletRequest request){
 		logger.info("[{}]-[getUserInfo method]-[接受客户端请求]", CONTROLLER);
 		
-		User user = (User) session.getAttribute(Const.CURRENT_USER);
+		String customToken = CookieUtil.readCustomCookie(request);
+		ServerResponse<User> userRes = checkUserIfHasCustomSessionId(customToken);
+		if(!userRes.isSuccess()){
+			logger.warn("[checkUserIfHasCustomSessionId]-have something wrong:{}", userRes.getMsg());
+			return ServerResponse.createByErrorResReturnMsg(userRes.getMsg());
+		}
+		
+		User user = userRes.getData();
 		if (user == null) {
 			ServerResponse<User> response = ServerResponse.createByErrorResReturnMsg("用户未登录,无法获取当前用户信息");
 			logger.info("[{}]-[getUserInfo method]-[获取用户信息,响应描述为：{}]", CONTROLLER, response.getMsg());
@@ -187,5 +153,20 @@ public class ShiroUserController {
 		logger.info("[{}]-[getUserInfo method]-[获取用户信息,响应描述为：{}]", CONTROLLER, response.getMsg());
 		return response;
 	}
+	
+	@PostMapping("/checkUserIfHasCustomSessionId")
+	public ServerResponse<User> checkUserIfHasCustomSessionId(String customToken) {
+		if(StringUtils.isBlank(customToken)) {
+			return ServerResponse.createBySucessResReturnData(null);
+		}
+		
+		User user = cacheService.get(customToken, User.class);
+		if(user == null) {
+			return ServerResponse.createBySucessResReturnData(null);
+		}
+		
+		return ServerResponse.createBySucessResReturnData(user);
+	}
+	
 	
 }

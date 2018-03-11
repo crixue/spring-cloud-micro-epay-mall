@@ -13,11 +13,11 @@ import com.epayMall.service.impl.DataClientZuulForCategory;
 @FeignClient(name="micro-epay-mall-client-zuul", fallback=DataClientZuulForCategory.class)
 public interface IDataClientZuulForCategory {
 	
-	@PostMapping("/epay-mall/manage/category/get_deep_category.do")
+	@PostMapping("/category/epay-mall/category/manage/get_deep_category.do")
 	ServerResponse<List<Integer>> getRecursionCategoryId(
 			@RequestParam(value = "categoryId", defaultValue = "0") Integer categoryId) ;
 
-	@PostMapping("/epay-mall/manage/category/getCategoryByCategoryId")
+	@PostMapping("/category/epay-mall/category/manage/getCategoryByCategoryId")
 	ServerResponse<Category> getCategoryByCategoryId(Integer categoryId) ;
 	
 }

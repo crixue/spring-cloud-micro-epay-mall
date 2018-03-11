@@ -2,6 +2,7 @@ package com.epayMall.redis.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +19,9 @@ import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.epayMall.pojo.User;
 import com.epayMall.redis.ICacheService;
+import com.epayMall.util.JsonUtil;
 
 @Service("cacheService")
 public class CacheServiceImpl implements ICacheService {
@@ -88,7 +90,6 @@ public class CacheServiceImpl implements ICacheService {
 	@Override
 	public void set(String key, String value) {
 		redisTemplate.opsForValue().set(key, value);
-
 	}
 
 	@Override
@@ -112,6 +113,18 @@ public class CacheServiceImpl implements ICacheService {
 		}
 
 	}
+	
+	@Override
+	public boolean setIfNotExists(String key, String value) {
+		return redisTemplate.opsForValue().setIfAbsent(key, value);
+	}
+	
+	@Override
+	public <T> T get(String key, Class<T> clazz){
+		return parseJson(get(key), clazz);
+		
+	}
+	
 	
 	/*---------------查询存储值为obj类型的列表类型----------------*/
 	@Override
@@ -185,6 +198,11 @@ public class CacheServiceImpl implements ICacheService {
 
 
 	/*---------------common---------------*/
+	@Override
+	public boolean expire(String key, long timeout, TimeUnit unit) {
+		return redisTemplate.expire(key, timeout, unit);
+	}
+	
 	@Override
 	public boolean exists(String key){
 		return redisTemplate.hasKey(key);
@@ -387,22 +405,14 @@ public class CacheServiceImpl implements ICacheService {
 
 	}
 
-	/*-----tools------*/
-	/**
-	 * SortField:按字段名称排序后输出。默认为false 这里使用的是fastjson：为了更好使用sort field
-	 * martch优化算法提升parser的性能，fastjson序列化的时候，
-	 * 缺省把SerializerFeature.SortField特性打开了。 反序列化的时候也缺省把SortFeidFastMatch的选项打开了。
-	 * 这样，如果你用fastjson序列化的文本，输出的结果是按照fieldName排序输出的，parser时也能利用这个顺序进行优化读取。
-	 * 这种情况下，parser能够获得非常好的性能。
-	 */
 	private static <T> String toJson(T obj) {
-		String value = JSON.toJSONString(obj, SerializerFeature.SortField);
+		String value = JsonUtil.obj2String(obj);
 		return value;
 
 	}
 
 	private static <T> T parseJson(String json, Class<T> clazz) {
-		return JSON.parseObject(json, clazz);
+		return JsonUtil.string2Obj(json, clazz);
 	}
 
 	private static <T> List<T> parseJsonList(List<String> list, Class<T> clazz) {
@@ -430,8 +440,14 @@ public class CacheServiceImpl implements ICacheService {
 	}
 
 	public static void main(String[] args) {
-		String score = "score";
-		String val  = toJson(score);
+		Map<User, User> map = new HashMap<>();
+		List<User> users = new ArrayList<>();
+		User u1 = new User();
+		u1.setId(123);
+		u1.setPhone("1264565");
+		users.add(u1);
+		map.put(u1, u1);
+		String val  = JSON.toJSONString(map);
 		System.out.println(val);
 	}
 
