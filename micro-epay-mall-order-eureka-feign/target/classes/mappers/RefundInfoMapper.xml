@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.epayMall.dao.RefundInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.epayMall.pojo.RefundInfo" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="user_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="order_no" jdbcType="BIGINT" javaType="java.lang.Long" />
+      <arg column="pay_platform" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="platform_number" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="platform_user_id" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="buy_login_id" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="refund_status" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="refund_fee" jdbcType="DECIMAL" javaType="java.math.BigDecimal" />
+      <arg column="refund_detail_desc" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="app_id" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="refund_reason" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+      <arg column="update_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, user_id, order_no, pay_platform, platform_number, platform_user_id, buy_login_id, 
+    refund_status, refund_fee, refund_detail_desc, app_id, refund_reason, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from mmall_refund_info
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from mmall_refund_info
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.epayMall.pojo.RefundInfo" >
+    insert into mmall_refund_info (id, user_id, order_no, 
+      pay_platform, platform_number, platform_user_id, 
+      buy_login_id, refund_status, refund_fee, 
+      refund_detail_desc, app_id, refund_reason, create_time, 
+      update_time)
+    values (#{id,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{orderNo,jdbcType=BIGINT}, 
+      #{payPlatform,jdbcType=INTEGER}, #{platformNumber,jdbcType=VARCHAR}, #{platformUserId,jdbcType=VARCHAR}, 
+      #{buyLoginId,jdbcType=VARCHAR}, #{refundStatus,jdbcType=VARCHAR}, #{refundFee,jdbcType=DECIMAL}, 
+      #{refundDetailDesc,jdbcType=VARCHAR}, #{appId,jdbcType=VARCHAR}, #{refundReason,jdbcType=VARCHAR}, now(), 
+      now())
+  </insert>
+  <insert id="insertSelective" parameterType="com.epayMall.pojo.RefundInfo" >
+    insert into mmall_refund_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="orderNo != null" >
+        order_no,
+      </if>
+      <if test="payPlatform != null" >
+        pay_platform,
+      </if>
+      <if test="platformNumber != null" >
+        platform_number,
+      </if>
+      <if test="platformUserId != null" >
+        platform_user_id,
+      </if>
+      <if test="buyLoginId != null" >
+        buy_login_id,
+      </if>
+      <if test="refundStatus != null" >
+        refund_status,
+      </if>
+      <if test="refundFee != null" >
+        refund_fee,
+      </if>
+      <if test="refundDetailDesc != null" >
+        refund_detail_desc,
+      </if>
+      <if test="appId != null" >
+        app_id,
+      </if>
+      <if test="refundReason != null">
+      	refund_reason,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="orderNo != null" >
+        #{orderNo,jdbcType=BIGINT},
+      </if>
+      <if test="payPlatform != null" >
+        #{payPlatform,jdbcType=INTEGER},
+      </if>
+      <if test="platformNumber != null" >
+        #{platformNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="platformUserId != null" >
+        #{platformUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="buyLoginId != null" >
+        #{buyLoginId,jdbcType=VARCHAR},
+      </if>
+      <if test="refundStatus != null" >
+        #{refundStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="refundFee != null" >
+        #{refundFee,jdbcType=DECIMAL},
+      </if>
+      <if test="refundDetailDesc != null" >
+        #{refundDetailDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="appId != null" >
+        #{appId,jdbcType=VARCHAR},
+      </if>
+      <if test="refundReason != null">
+      	#{refundReason,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        now(),
+      </if>
+      <if test="updateTime != null" >
+        now(),
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.epayMall.pojo.RefundInfo" >
+    update mmall_refund_info
+    <set >
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="orderNo != null" >
+        order_no = #{orderNo,jdbcType=BIGINT},
+      </if>
+      <if test="payPlatform != null" >
+        pay_platform = #{payPlatform,jdbcType=INTEGER},
+      </if>
+      <if test="platformNumber != null" >
+        platform_number = #{platformNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="platformUserId != null" >
+        platform_user_id = #{platformUserId,jdbcType=VARCHAR},
+      </if>
+      <if test="buyLoginId != null" >
+        buy_login_id = #{buyLoginId,jdbcType=VARCHAR},
+      </if>
+      <if test="refundStatus != null" >
+        refund_status = #{refundStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="refundFee != null" >
+        refund_fee = #{refundFee,jdbcType=DECIMAL},
+      </if>
+      <if test="refundDetailDesc != null" >
+        refund_detail_desc = #{refundDetailDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="appId != null" >
+        app_id = #{appId,jdbcType=VARCHAR},
+      </if>
+	  <if test="refundReason != null">
+      	refund_reason = #{refundReason,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        update_time = now(),
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.epayMall.pojo.RefundInfo" >
+    update mmall_refund_info
+    set user_id = #{userId,jdbcType=INTEGER},
+      order_no = #{orderNo,jdbcType=BIGINT},
+      pay_platform = #{payPlatform,jdbcType=INTEGER},
+      platform_number = #{platformNumber,jdbcType=VARCHAR},
+      platform_user_id = #{platformUserId,jdbcType=VARCHAR},
+      buy_login_id = #{buyLoginId,jdbcType=VARCHAR},
+      refund_status = #{refundStatus,jdbcType=VARCHAR},
+      refund_fee = #{refundFee,jdbcType=DECIMAL},
+      refund_detail_desc = #{refundDetailDesc,jdbcType=VARCHAR},
+      app_id = #{appId,jdbcType=VARCHAR},
+      refund_reason = #{refundReason,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = now()
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  
+  
+  <select id="selectByOrderNoAndUserId" parameterType="map" resultMap="BaseResultMap">
+  	select 
+	<include refid="Base_Column_List"/>
+  	from mmall_refund_info
+  	where order_no = #{orderNo}
+  	and user_id = #{userId}
+  </select>
+</mapper>
