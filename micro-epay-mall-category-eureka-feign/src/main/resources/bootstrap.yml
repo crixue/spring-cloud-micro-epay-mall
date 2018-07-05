@@ -1,0 +1,7 @@
+spring:
+  cloud:
+    config:
+      name: epay-mall-config
+      uri: http://localhost:8001
+      profile: dev
+      label: master

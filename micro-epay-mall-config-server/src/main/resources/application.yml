@@ -1,0 +1,16 @@
+server:
+  port: 8001
+spring:
+  profiles:
+    active:
+    - dev
+    
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/crixue/config-repo-epay-mall/     # \u914D\u7F6Egit\u4ED3\u5E93\u7684\u5730\u5740
+          username:                                             # git\u4ED3\u5E93\u7684\u8D26\u53F7
+          password:                                             # git\u4ED3\u5E93\u7684\u5BC6\u7801
