@@ -41,8 +41,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://192.168.36.110:3306/mmall?characterEncoding=utf-8
-    username: xrj
-    password: xue13581321
+    username: root
+    password: 123456
     
     druid:
       initial-size: 5
